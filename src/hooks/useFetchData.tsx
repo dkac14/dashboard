@@ -1,57 +1,62 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState} from "react";
+
 import type {
   OpenMeteoResponse,
 } from "../types/DashboardTypes";
 
-export type CityName =
-  | "guayaquil"
-  | "quito"
-  | "manta"
-  | "cuenca";
-
-interface Coordinates {
-  latitude: number;
-  longitude: number;
-}
-
-const cityCoordinates: Record<
-  CityName,
-  Coordinates
+const CITY_COORDS: Record<
+  string,
+  {
+    latitude: number;
+    longitude: number;
+  }
 > = {
-  guayaquil: {
+  Guayaquil: {
     latitude: -2.1962,
     longitude: -79.8862,
   },
-  quito: {
+  Quito: {
     latitude: -0.1807,
     longitude: -78.4678,
   },
-  manta: {
+  Manta: {
     latitude: -0.9677,
     longitude: -80.7089,
   },
-  cuenca: {
+  Cuenca: {
     latitude: -2.9001,
     longitude: -79.0059,
   },
 };
 
-export default function useFetchData(
-  selectedCity: CityName
-): OpenMeteoResponse | undefined {
-  const [data, setData] =
-    useState<OpenMeteoResponse>();
+export default function useFetchData(selectedOption: string | null): { data: OpenMeteoResponse | undefined; loading: boolean; error: string | null;} {
+  const [data, setData] = useState<OpenMeteoResponse>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
+      
+      setLoading(true);
+      setError(null);
+
       try {
-        const coordinates =
-          cityCoordinates[selectedCity];
+
+        const cityConfig =
+          selectedOption !== null
+            ? CITY_COORDS[selectedOption]
+            : CITY_COORDS["Guayaquil"];
+
+        if (!cityConfig) {
+          throw new Error(
+            `Ciudad no válida: ${selectedOption}`
+          );
+        }
 
         const URL =
           "https://api.open-meteo.com/v1/forecast" +
-          `?latitude=${coordinates.latitude}` +
-          `&longitude=${coordinates.longitude}` +
+          `?latitude=${cityConfig.latitude}` +
+          `&longitude=${cityConfig.longitude}` +
           "&hourly=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m" +
           "&current=temperature_2m,relative_humidity_2m,apparent_temperature,wind_speed_10m" +
           "&timezone=auto";
@@ -64,20 +69,22 @@ export default function useFetchData(
           );
         }
 
-        const dataResponse: OpenMeteoResponse =
-          await response.json();
+        const dataResponse: OpenMeteoResponse = await response.json();
 
         setData(dataResponse);
+        setLoading(false);
       } catch (error) {
-        console.error(
-          "No se pudieron obtener los datos:",
-          error
-        );
+          setError((error as Error).message);
+          console.error("No se pudieron obtener los datos:",error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchData();
-  }, [selectedCity]);
+  }, [selectedOption]);
 
-  return data;
+  return {
+    data, loading, error,
+  };
 }

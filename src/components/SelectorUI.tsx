@@ -1,25 +1,33 @@
+import { useState } from "react";
+
 import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
-import Select, {
-  type SelectChangeEvent,
-} from "@mui/material/Select";
+import Select from "@mui/material/Select";
+import type { SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
+import Typography from "@mui/material/Typography";
 
-import type { CityName } from "../hooks/useFetchData";
-
-interface SelectorUIProps {
-  selectedCity: CityName;
-  onOptionSelect: (city: CityName) => void;
+interface SelectorProps {
+  onOptionSelect: (option: string) => void;
 }
 
 export default function SelectorUI({
-  selectedCity,
   onOptionSelect,
-}: SelectorUIProps) {
+}: SelectorProps) {
+  const [cityInput, setCityInput] =
+    useState("");
+
   const handleChange = (
-    event: SelectChangeEvent<CityName>
+    event: SelectChangeEvent<string>
   ) => {
-    onOptionSelect(event.target.value as CityName);
+    const selectedValue =
+      event.target.value;
+
+    // Cambia el valor visual del Select.
+    setCityInput(selectedValue);
+
+    // Comunica el valor al componente App.
+    onOptionSelect(selectedValue);
   };
 
   return (
@@ -28,29 +36,43 @@ export default function SelectorUI({
         Ciudad
       </InputLabel>
 
-      <Select<CityName>
+      <Select
         labelId="city-select-label"
         id="city-simple-select"
         label="Ciudad"
-        value={selectedCity}
+        value={cityInput}
         onChange={handleChange}
       >
-        <MenuItem value="guayaquil">
+        <MenuItem value="" disabled>
+          <em>Seleccione una ciudad</em>
+        </MenuItem>
+
+        <MenuItem value="Guayaquil">
           Guayaquil
         </MenuItem>
 
-        <MenuItem value="quito">
+        <MenuItem value="Quito">
           Quito
         </MenuItem>
 
-        <MenuItem value="manta">
+        <MenuItem value="Manta">
           Manta
         </MenuItem>
 
-        <MenuItem value="cuenca">
+        <MenuItem value="Cuenca">
           Cuenca
         </MenuItem>
       </Select>
+
+      {cityInput && (
+        <Typography
+          variant="body2"
+          sx={{ mt: 1 }}
+        >
+          Información del clima en{" "}
+          <strong>{cityInput}</strong>
+        </Typography>
+      )}
     </FormControl>
   );
 }

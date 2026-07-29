@@ -3,8 +3,6 @@ import { useState } from "react";
 import Grid from "@mui/material/Grid";
 
 import useFetchData from "./hooks/useFetchData";
-import type { CityName } from "./hooks/useFetchData";
-
 import HeaderUI from "./components/HeaderUI";
 import AlertUI from "./components/AlertUI";
 import SelectorUI from "./components/SelectorUI";
@@ -13,31 +11,43 @@ import TableUI from "./components/TableUI";
 import ChartUI from "./components/ChartUI";
 
 function App() {
-  const [selectedCity, setSelectedCity] =
-    useState<CityName>("guayaquil");
 
-  const dataFetcherOutput =
-    useFetchData(selectedCity);
+  const [selectedOption, setSelectedOption] =
+    useState<string | null>(null);
+
+  const {
+      data,
+      loading,
+      error,
+  } = useFetchData(selectedOption);
+
+  if(loading) {
+    return <h2> Cargando datos...</h2>
+  }
+
+  if (error) {
+    return <h2>Error: {error}</h2>;
+  }
 
   return (
+
     <Grid
       container
       spacing={5}
       sx={{
         justifyContent: "center",
         alignItems: "center",
-        p: 3,
       }}
     >
       {/* Encabezado */}
-      <Grid size={{ xs: 12 }}>
+      <Grid size={{ xs: 12, md: 12 }}>
         <HeaderUI />
       </Grid>
 
       {/* Alerta */}
       <Grid
         container
-        size={{ xs: 12 }}
+        size={{ xs: 12, md: 12 }}
         sx={{
           justifyContent: "flex-end",
           alignItems: "center",
@@ -49,8 +59,7 @@ function App() {
       {/* Selector */}
       <Grid size={{ xs: 12, md: 3 }}>
         <SelectorUI
-          selectedCity={selectedCity}
-          onOptionSelect={setSelectedCity}
+          onOptionSelect={setSelectedOption}
         />
       </Grid>
 
@@ -61,37 +70,37 @@ function App() {
         size={{ xs: 12, md: 9 }}
       >
         <Grid size={{ xs: 12, md: 3 }}>
-          {dataFetcherOutput && (
+          {data && (
             <IndicatorUI
               title="Temperatura (2 m)"
-              description={`${dataFetcherOutput.current.temperature_2m} ${dataFetcherOutput.current_units.temperature_2m}`}
+              description={`${data.current.temperature_2m} ${data.current_units.temperature_2m}`}
             />
           )}
         </Grid>
 
         <Grid size={{ xs: 12, md: 3 }}>
-          {dataFetcherOutput && (
+          {data && (
             <IndicatorUI
               title="Temperatura aparente"
-              description={`${dataFetcherOutput.current.apparent_temperature} ${dataFetcherOutput.current_units.apparent_temperature}`}
+              description={`${data.current.apparent_temperature} ${data.current_units.apparent_temperature}`}
             />
           )}
         </Grid>
 
         <Grid size={{ xs: 12, md: 3 }}>
-          {dataFetcherOutput && (
+          {data && (
             <IndicatorUI
               title="Velocidad del viento"
-              description={`${dataFetcherOutput.current.wind_speed_10m} ${dataFetcherOutput.current_units.wind_speed_10m}`}
+              description={`${data.current.wind_speed_10m} ${data.current_units.wind_speed_10m}`}
             />
           )}
         </Grid>
 
         <Grid size={{ xs: 12, md: 3 }}>
-          {dataFetcherOutput && (
+          {data && (
             <IndicatorUI
               title="Humedad relativa"
-              description={`${dataFetcherOutput.current.relative_humidity_2m} ${dataFetcherOutput.current_units.relative_humidity_2m}`}
+              description={`${data.current.relative_humidity_2m} ${data.current_units.relative_humidity_2m}`}
             />
           )}
         </Grid>
@@ -99,7 +108,7 @@ function App() {
 
       {/* Gráfico */}
       <Grid
-        size={{ xs: 12, md: 6 }}
+        size={{ xs: 6, md: 6 }}
         sx={{
           display: {
             xs: "none",
@@ -107,14 +116,18 @@ function App() {
           },
         }}
       >
-        {dataFetcherOutput && (
+        {data && (
           <ChartUI
-            arrLabels={dataFetcherOutput.hourly.time}
+            arrLabels={
+              data.hourly.time
+            }
             arrValues1={
-              dataFetcherOutput.hourly.temperature_2m
+              data.hourly
+                .temperature_2m
             }
             arrValues2={
-              dataFetcherOutput.hourly.relative_humidity_2m
+              data.hourly
+                .relative_humidity_2m
             }
           />
         )}
@@ -122,7 +135,7 @@ function App() {
 
       {/* Tabla */}
       <Grid
-        size={{ xs: 12, md: 6 }}
+        size={{ xs: 6, md: 6 }}
         sx={{
           display: {
             xs: "none",
@@ -131,17 +144,29 @@ function App() {
           minHeight: 400,
         }}
       >
-        {dataFetcherOutput && (
+        {data && (
           <TableUI
-            arrLabels={dataFetcherOutput.hourly.time}
+            arrLabels={
+              data.hourly.time
+            }
             arrValues1={
-              dataFetcherOutput.hourly.temperature_2m
+              data.hourly
+                .temperature_2m
             }
             arrValues2={
-              dataFetcherOutput.hourly.relative_humidity_2m
+              data.hourly
+                .relative_humidity_2m
             }
           />
         )}
+      </Grid>
+
+      {/* Información adicional */}
+      <Grid size={{ xs: 12, md: 12 }}>
+        Ciudad seleccionada:{" "}
+        <strong>
+          {selectedOption ?? "Guayaquil"}
+        </strong>
       </Grid>
     </Grid>
   );

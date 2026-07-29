@@ -29,7 +29,7 @@ export default function ChartUI({arrLabels, arrValues1, arrValues2}: ChartUIProp
         xAxis={[
           {
             scaleType: "point",
-            data: arrLabels.map((hora) => hora.slice(11, 16)),
+            data: arrLabels.map((hora) => hora.slice(1, 10)),
           },
         ]}
       />
