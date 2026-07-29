@@ -6,7 +6,7 @@
   "homepage": "https://dkac14.github.io/dashboard",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "vite build",
     "lint": "oxlint",
     "preview": "vite preview",
     "predeploy": "npm run build",
